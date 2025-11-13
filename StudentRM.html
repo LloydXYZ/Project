@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Management System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .import-btn,
+        .archive-btn {
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .import-btn {
+            background: #48bb78;
+        }
+
+        .import-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .archive-btn {
+            background: #ed8936;
+        }
+
+        .archive-btn:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(237, 137, 54, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .year-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .year-input {
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 200px;
+        }
+
+        .year-add-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .year-add-btn:hover {
+            background: #38a169;
+        }
+
+        .year-display {
+            padding: 12px 20px;
+            border: 2px solid #4299e1;
+            border-radius: 8px;
+            font-size: 1em;
+            background: #e6f2ff;
+            color: #2b6cb0;
+            font-weight: 600;
+        }
+
+        .semester-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #4299e1;
+            color: white;
+        }
+
+        .semester-btn:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+
+        .semester-btn.active {
+            background: #2b6cb0;
+        }
+
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+
+        .btn-secondary {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #dd6b20;
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .room-creation {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .room-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .btn-create {
+            background: #4299e1;
+            color: white;
+            padding: 12px 30px;
+        }
+
+        .action-buttons {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-info {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #3182ce;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .room-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .room-title {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .student-count {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .student-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .student-item {
+            background: #f7fafc;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .student-details {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .remove-btn {
+            background: #fc8181;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .remove-btn:hover {
+            background: #f56565;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 20px;
+        }
+
+        .modal-content-large {
+            max-width: 1000px;
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            background: #cbd5e0;
+            color: #2d3748;
+        }
+
+        .btn-cancel:hover {
+            background: #a0aec0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .empty-state h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .archive-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .archive-item {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .archive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .archive-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .archive-semester {
+            color: #718096;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .view-archive-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .view-archive-btn:hover {
+            background: #3182ce;
+        }
+
+        .archive-rooms {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .archive-room {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .archive-room-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .archive-student {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #f7fafc;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible;
+            }
+
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .modal {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <h1>Room Management System</h1>
+                    <p class="subtitle">Create rooms and manage students dynamically.</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="import-btn" onclick="document.getElementById('fileInput').click()">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                            </path>
+                        </svg>
+                        Import from Excel
+                    </button>
+                    <button class="archive-btn" onclick="showArchiveModal()">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4">
+                            </path>
+                        </svg>
+                        View Archive
+                    </button>
+                    <button class="import-btn" onclick="printCurrentRooms()" style="background: #5a67d8;">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                            </path>
+                        </svg>
+                        Print Current
+                    </button>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" onchange="handleFileImport(event)">
+            </div>
+            <div class="controls">
+                <div class="year-input-group">
+                    <input type="text" class="year-input" id="academicYearInput" placeholder="e.g., 2023-2024">
+                    <button class="year-add-btn" onclick="setAcademicYear()">Set Year</button>
+                </div>
+                <div class="year-display" id="currentYearDisplay">No Year Set</div>
+                <button class="semester-btn active" onclick="setSemester('First Semester', this)">First
+                    Semester</button>
+                <button class="semester-btn" onclick="setSemester('Second Semester', this)">Second Semester</button>
+            </div>
+        </div>
+        <div class="search-section">
+            <div class="search-controls">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search by name or course..."
+                    oninput="filterStudents()">
+                <button class="btn btn-primary" onclick="filterStudents()">Search</button>
+                <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+            </div>
+        </div>
+        <div class="room-creation">
+            <input type="number" class="room-input" id="numRooms" placeholder="Number of rooms" min="1">
+            <button class="btn btn-create" onclick="createRooms()">Create Rooms</button>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-success" onclick="showAddStudentModal()">+ Add Student</button>
+            <button class="btn btn-info" onclick="showTransferModal()">Transfer Student</button>
+            <button class="btn btn-secondary" onclick="archiveCurrentYear()">Archive Current Year</button>
+        </div>
+        <div id="roomsContainer" class="rooms-grid"></div>
+        <div id="emptyState" class="empty-state">
+            <h2>No Rooms Created Yet</h2>
+            <p>Set an academic year and create rooms to start managing students</p>
+        </div>
+    </div>
+
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Add Student</div>
+            <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input"
+                    id="studentName"></div>
+            <div class="form-group"><label class="form-label">Course</label><input type="text" class="form-input"
+                    id="studentCourse"></div>
+            <div class="form-group"><label class="form-label">Year</label><input type="text" class="form-input"
+                    id="studentYear"></div>
+            <div class="form-group"><label class="form-label">Room Number</label><input type="number" class="form-input"
+                    id="studentRoom" min="1"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="closeAddStudentModal()">Cancel</button>
+                <button class="btn btn-success" onclick="addStudent()">Add Student</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="transferModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Transfer Student</div>
+            <div class="form-group"><label class="form-label">From Room</label><select class="form-input" id="fromRoom"
+                    onchange="loadStudentsForTransfer()">
+                    <option value="">Select Room</option>
+                </select></div>
+            <div class="form-group"><label class="form-label">Select Student</label><select class="form-input"
+                    id="transferStudent">
+                    <option value="">Select Student</option>
+                </select></div>
+            <div class="form-group"><label class="form-label">To Room</label><select class="form-input" id="toRoom">
+                    <option value="">Select Room</option>
+                </select></div>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="closeTransferModal()">Cancel</button>
+                <button class="btn btn-info" onclick="transferStudent()">Transfer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="archiveModal" class="modal">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">Archived Years</div>
+            <div style="margin-bottom: 20px;"><select class="filter-select" id="archiveYearFilter"
+                    onchange="filterArchiveList()" style="width: 100%;">
+                    <option value="">All Years</option>
+                </select></div>
+            <div id="archiveList" class="archive-list"></div>
+            <div class="modal-buttons"><button class="btn btn-cancel" onclick="closeArchiveModal()">Close</button></div>
+        </div>
+    </div>
+
+    <div id="archiveDetailsModal" class="modal">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header" id="archiveDetailsTitle"></div>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" class="search-input" id="archiveSearchInput"
+                    placeholder="Search students in archive..." oninput="filterArchiveDetails()" style="flex: 1;">
+                <button class="btn btn-info" onclick="printArchiveDetails()">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        style="display: inline; vertical-align: middle; margin-right: 5px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                        </path>
+                    </svg>
+                    Print
+                </button>
+            </div>
+            <div id="archiveDetailsContent"></div>
+            <div class="modal-buttons"><button class="btn btn-cancel" onclick="closeArchiveDetailsModal()">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rooms = []; let currentSemester = 'First Semester'; let currentAcademicYear = ''; let archives = [];
+        function setAcademicYear() { const y = document.getElementById('academicYearInput').value.trim(); if (!y) { alert('Please enter an academic year (e.g., 2023-2024)'); return } if (rooms.length > 0 && currentAcademicYear && currentAcademicYear !== y) { if (confirm('Changing the academic year will clear current rooms. Do you want to continue?')) { rooms = []; renderRooms() } else return } currentAcademicYear = y; document.getElementById('currentYearDisplay').textContent = currentAcademicYear; document.getElementById('academicYearInput').value = '' }
+        function setSemester(s, b) { currentSemester = s; document.querySelectorAll('.semester-btn').forEach(x => x.classList.remove('active')); b.classList.add('active') }
+        function createRooms() { if (!currentAcademicYear) { alert('Please set an academic year first!'); return } const n = parseInt(document.getElementById('numRooms').value); if (!n || n < 1) { alert('Please enter a valid number of rooms'); return } rooms = []; for (let i = 0; i < n; i++)rooms.push({ id: i + 1, name: `Room ${i + 1}`, students: [] }); document.getElementById('numRooms').value = ''; renderRooms(); updateYearFilter() }
+        function handleFileImport(e) { const f = e.target.files[0]; if (!f) return; if (!currentAcademicYear) { alert('Please set an academic year first!'); e.target.value = ''; return } if (rooms.length === 0) { alert('Please create rooms first!'); e.target.value = ''; return } const fn = f.name.toLowerCase(); const r = new FileReader(); r.onload = function (ev) { try { let students = []; if (fn.endsWith('.csv')) { console.log('Processing CSV...'); const t = ev.target.result; const lines = t.split(/\r?\n/).filter(l => l.trim()); if (lines.length < 2) { alert('CSV file appears empty. Lines: ' + lines.length); e.target.value = ''; return } console.log('Headers:', lines[0]); console.log('Sample:', lines[1]); const h = lines[0].split(',').map(x => x.trim().replace(/['"]/g, '')); console.log('Parsed headers:', h); const ni = h.findIndex(x => x.toLowerCase().includes('name')); const ci = h.findIndex(x => x.toLowerCase().includes('course')); const yi = h.findIndex(x => x.toLowerCase().includes('year')); console.log('Indices - Name:', ni, 'Course:', ci, 'Year:', yi); if (ni === -1) { alert('Could not find "Name" column. Found: ' + h.join(', ')); e.target.value = ''; return } for (let i = 1; i < lines.length; i++) { if (!lines[i].trim()) continue; const v = lines[i].split(',').map(x => x.trim().replace(/['"]/g, '')); if (v[ni] && v[ni].trim()) { students.push({ id: Date.now() + i, name: v[ni].trim(), course: ci !== -1 ? (v[ci] || 'N/A').trim() : 'N/A', year: yi !== -1 ? String(v[yi] || '1').trim() : '1' }) } } console.log('Students from CSV:', students.length) } else { console.log('Processing Excel...'); const d = new Uint8Array(ev.target.result); const wb = XLSX.read(d, { type: 'array', cellDates: true, cellNF: false, cellText: false }); console.log('Sheets:', wb.SheetNames); const ws = wb.Sheets[wb.SheetNames[0]]; const jd = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false, header: 1 }); console.log('Rows:', jd.length); console.log('Headers:', jd[0]); if (jd.length < 2) { alert('Excel file appears empty'); e.target.value = ''; return } const h = jd[0].map(x => String(x || '').trim()); console.log('Headers:', h); const ni = h.findIndex(x => x.toLowerCase().includes('name')); const ci = h.findIndex(x => x.toLowerCase().includes('course')); const yi = h.findIndex(x => x.toLowerCase().includes('year')); console.log('Indices - Name:', ni, 'Course:', ci, 'Year:', yi); if (ni === -1) { alert('Could not find "Name" column. Found: ' + h.join(', ')); e.target.value = ''; return } for (let i = 1; i < jd.length; i++) { const row = jd[i]; if (!row || row.length === 0) continue; const n = String(row[ni] || '').trim(); if (n) { students.push({ id: Date.now() + i, name: n, course: ci !== -1 ? String(row[ci] || 'N/A').trim() : 'N/A', year: yi !== -1 ? String(row[yi] || '1').trim() : '1' }) } } console.log('Students from Excel:', students.length) } if (students.length === 0) { alert('No valid student data found.\n1. Check headers in first row\n2. At least one Name value\n3. Open console (F12) for logs'); e.target.value = ''; return } console.log('Sample:', students[0]); distributeStudents(students) } catch (err) { console.error('Import error:', err); alert('Error: ' + err.message + '\n\nCheck console (F12)') } }; r.onerror = function (err) { console.error('File error:', err); alert('Could not read file: ' + err) }; if (fn.endsWith('.csv')) r.readAsText(f); else r.readAsArrayBuffer(f); e.target.value = '' }
+        function distributeStudents(students) {
+            const groups = {};
+            students.forEach(s => {
+                const k = `${s.course}_Year${s.year}`;
+                if (!groups[k]) groups[k] = { course: s.course, year: s.year, students: [] };
+                groups[k].students.push(s)
+            });
+
+            let ga = Object.values(groups);
+            const tg = ga.length;
+            console.log(`Found ${tg} groups:`, ga.map(g => `${g.course} Year ${g.year} (${g.students.length})`));
+
+            rooms.forEach(r => r.students = []);
+
+            // Sort groups by size (largest first) so we can split big groups
+            ga.sort((a, b) => b.students.length - a.students.length);
+
+            // Create room assignment order - shuffle which rooms each group gets
+            let roomOrder = [];
+            for (let i = 0; i < rooms.length; i++) {
+                roomOrder.push(i);
+            }
+            // Shuffle room order randomly
+            for (let i = roomOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [roomOrder[i], roomOrder[j]] = [roomOrder[j], roomOrder[i]];
+            }
+
+            let availableRooms = rooms.length;
+            let roomOrderIdx = 0;
+
+            ga.forEach((g, groupIndex) => {
+                // Shuffle students within this course-year group
+                for (let i = g.students.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [g.students[i], g.students[j]] = [g.students[j], g.students[i]]
+                }
+
+                // Calculate how many rooms this group should use
+                const remainingGroups = ga.length - groupIndex;
+                const roomsForThisGroup = Math.ceil(availableRooms / remainingGroups);
+
+                // Split students evenly across the allocated rooms
+                const studentsPerRoom = Math.ceil(g.students.length / roomsForThisGroup);
+                let studentIdx = 0;
+
+                for (let i = 0; i < roomsForThisGroup && roomOrderIdx < roomOrder.length && studentIdx < g.students.length; i++) {
+                    const actualRoomIdx = roomOrder[roomOrderIdx];
+                    const chunk = g.students.slice(studentIdx, studentIdx + studentsPerRoom);
+                    rooms[actualRoomIdx].students = chunk;
+                    studentIdx += studentsPerRoom;
+                    roomOrderIdx++;
+                    availableRooms--;
+                }
+            });
+
+            rooms.forEach(r => {
+                r.students.sort((a, b) => a.name.localeCompare(b.name));
+                r.students.forEach((s, i) => s.number = i + 1)
+            });
+
+            renderRooms();
+            updateYearFilter();
+
+            let sum = `✅ Import Complete!\n\n📊 Statistics:\n• Total Students: ${students.length}\n• Course-Year Groups: ${tg}\n• Rooms Created: ${rooms.length}\n• Rooms Used: ${rooms.filter(r => r.students.length > 0).length}\n\n🏫 Room Distribution:\n`;
+
+            rooms.forEach((r, i) => {
+                if (r.students.length > 0) {
+                    const s = r.students[0];
+                    sum += `Room ${i + 1}: ${s.course} Year ${s.year} → ${r.students.length} students\n`
+                } else {
+                    sum += `Room ${i + 1}: Empty\n`
+                }
+            });
+
+            sum += `\n✔ All students distributed randomly across rooms! Import again for new arrangement.`;
+            alert(sum)
+        }
+        function renderRooms() { const c = document.getElementById('roomsContainer'); const e = document.getElementById('emptyState'); if (rooms.length === 0) { c.innerHTML = ''; e.style.display = 'block'; return } e.style.display = 'none'; const st = document.getElementById('searchInput').value.toLowerCase(); c.innerHTML = rooms.map(r => { const fs = r.students.filter(s => s.name.toLowerCase().includes(st) || s.course.toLowerCase().includes(st)); return `<div class="room-card"><div class="room-header"><div class="room-title">${r.name}</div><div class="student-count">${fs.length} students</div></div><div class="student-list">${fs.length === 0 ? '<p style="text-align:center;color:#a0aec0;padding:20px;">No students</p>' : fs.map(s => `<div class="student-item"><div class="student-info"><div class="student-name">${s.number ? s.number + '. ' : ''}${s.name}</div><div class="student-details">${s.course} - Year ${s.year}</div></div><button class="remove-btn" onclick="removeStudent(${r.id},${s.id})">Remove</button></div>`).join('')}</div></div>` }).join('') }
+        function removeStudent(rid, sid) { if (!confirm('Remove this student?')) return; const r = rooms.find(x => x.id === rid); r.students = r.students.filter(s => s.id !== sid); r.students.sort((a, b) => a.name.localeCompare(b.name)); r.students.forEach((s, i) => s.number = i + 1); renderRooms(); updateYearFilter() }
+        function addStudent() { const n = document.getElementById('studentName').value.trim(); const c = document.getElementById('studentCourse').value.trim(); const y = document.getElementById('studentYear').value.trim(); const rn = parseInt(document.getElementById('studentRoom').value); if (!n || !c || !y || !rn) { alert('Please fill all fields'); return } const r = rooms.find(x => x.id === rn); if (!r) { alert('Invalid room number'); return } r.students.push({ id: Date.now(), name: n, course: c, year: y }); r.students.sort((a, b) => a.name.localeCompare(b.name)); r.students.forEach((s, i) => s.number = i + 1); closeAddStudentModal(); renderRooms(); updateYearFilter(); alert('Student added successfully!') }
+        function showTransferModal() { if (!currentAcademicYear) { alert('Please set an academic year first!'); return } if (rooms.length === 0) { alert('Please create rooms first!'); return } const fr = document.getElementById('fromRoom'); const tr = document.getElementById('toRoom'); const o = rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join(''); fr.innerHTML = '<option value="">Select Room</option>' + o; tr.innerHTML = '<option value="">Select Room</option>' + o; document.getElementById('transferStudent').innerHTML = '<option value="">Select Student</option>'; document.getElementById('transferModal').classList.add('active') }
+        function closeTransferModal() { document.getElementById('transferModal').classList.remove('active') }
+        function loadStudentsForTransfer() { const rid = parseInt(document.getElementById('fromRoom').value); const ss = document.getElementById('transferStudent'); if (!rid) { ss.innerHTML = '<option value="">Select Student</option>'; return } const r = rooms.find(x => x.id === rid); const o = r.students.map(s => `<option value="${s.id}">${s.name} - ${s.course}</option>`).join(''); ss.innerHTML = '<option value="">Select Student</option>' + o }
+        function transferStudent() { const frid = parseInt(document.getElementById('fromRoom').value); const trid = parseInt(document.getElementById('toRoom').value); const sid = parseInt(document.getElementById('transferStudent').value); if (!frid || !trid || !sid) { alert('Please fill all fields'); return } if (frid === trid) { alert('Cannot transfer to the same room'); return } const fr = rooms.find(r => r.id === frid); const tr = rooms.find(r => r.id === trid); const si = fr.students.findIndex(s => s.id === sid); if (si === -1) { alert('Student not found'); return } const s = fr.students.splice(si, 1)[0]; fr.students.sort((a, b) => a.name.localeCompare(b.name)); fr.students.forEach((x, i) => x.number = i + 1); tr.students.push(s); tr.students.sort((a, b) => a.name.localeCompare(b.name)); tr.students.forEach((x, i) => x.number = i + 1); closeTransferModal(); renderRooms(); alert('Student transferred successfully!') }
+        function filterStudents() { renderRooms() }
+        function clearSearch() { document.getElementById('searchInput').value = ''; renderRooms() }
+        function updateYearFilter() { const ay = new Set(); archives.forEach(a => ay.add(a.year)); const yf = document.getElementById('archiveYearFilter'); if (!yf) return; const cv = yf.value; yf.innerHTML = '<option value="">All Years</option>' + Array.from(ay).sort().map(y => `<option value="${y}">${y}</option>`).join(''); yf.value = cv }
+        function archiveCurrentYear() { if (!currentAcademicYear) { alert('No academic year is set!'); return } if (rooms.length === 0) { alert('No rooms to archive!'); return } if (!confirm(`Archive ${currentAcademicYear} - ${currentSemester}?`)) return; const ei = archives.findIndex(a => a.year === currentAcademicYear && a.semester === currentSemester); const ad = { year: currentAcademicYear, semester: currentSemester, rooms: JSON.parse(JSON.stringify(rooms)), archivedDate: new Date().toLocaleDateString() }; if (ei !== -1) { if (confirm('This year and semester already exists in archive. Replace it?')) archives[ei] = ad; else return } else archives.push(ad); alert('Year archived successfully!'); rooms = []; renderRooms() }
+        function showArchiveModal() { if (archives.length === 0) { alert('No archived years available!'); return } updateYearFilter(); filterArchiveList(); document.getElementById('archiveModal').classList.add('active') }
+        function filterArchiveList() { const yf = document.getElementById('archiveYearFilter').value; const al = document.getElementById('archiveList'); const fa = archives.filter(a => !yf || a.year === yf); if (fa.length === 0) { al.innerHTML = '<p style="text-align:center;color:#a0aec0;padding:40px;">No archives found for selected filter.</p>'; return } al.innerHTML = fa.map(a => { const oi = archives.indexOf(a); return `<div class="archive-item"><div class="archive-header"><div><div class="archive-title">${a.year}</div><div class="archive-semester">${a.semester}</div><div style="color:#a0aec0;font-size:0.85em;margin-top:3px;">Archived: ${a.archivedDate}</div></div><button class="view-archive-btn" onclick="viewArchiveDetails(${oi})">View Details</button></div></div>` }).join('') }
+        function closeArchiveModal() { document.getElementById('archiveModal').classList.remove('active') }
+        function printCurrentRooms() { if (!currentAcademicYear) { alert('No academic year is set!'); return } if (rooms.length === 0) { alert('No rooms to print!'); return } let pc = `<div id="printArea" style="padding:20px;font-family:Arial,sans-serif;"><h1 style="text-align:center;margin-bottom:10px;">${currentAcademicYear} - ${currentSemester}</h1><p style="text-align:center;color:#666;margin-bottom:30px;">Generated: ${new Date().toLocaleDateString()}</p>`; rooms.forEach(r => { pc += `<div style="page-break-inside:avoid;margin-bottom:30px;"><h2 style="background:#667eea;color:white;padding:10px;border-radius:5px;">${r.name} - ${r.students.length} Student${r.students.length !== 1 ? 's' : ''}</h2><table style="width:100%;border-collapse:collapse;margin-top:10px;"><thead><tr style="background:#f0f0f0;"><th style="border:1px solid #ddd;padding:8px;text-align:left;">No.</th><th style="border:1px solid #ddd;padding:8px;text-align:left;">Name</th><th style="border:1px solid #ddd;padding:8px;text-align:left;">Course</th><th style="border:1px solid #ddd;padding:8px;text-align:left;">Year</th></tr></thead><tbody>`; if (r.students.length === 0) pc += `<tr><td colspan="4" style="border:1px solid #ddd;padding:8px;text-align:center;color:#999;">No students</td></tr>`; else r.students.forEach(s => { pc += `<tr><td style="border:1px solid #ddd;padding:8px;">${s.number || ''}</td><td style="border:1px solid #ddd;padding:8px;">${s.name}</td><td style="border:1px solid #ddd;padding:8px;">${s.course}</td><td style="border:1px solid #ddd;padding:8px;">${s.year}</td></tr>` }); pc += `</tbody></table></div>` }); pc += `</div>`; const epa = document.getElementById('printArea'); if (epa) epa.remove(); document.body.insertAdjacentHTML('beforeend', pc); window.print(); setTimeout(() => { const pa = document.getElementById('printArea'); if (pa) pa.remove() }, 100) }
+        let currentViewingArchiveIndex = null;
+        function viewArchiveDetails(i) { currentViewingArchiveIndex = i; const a = archives[i]; document.getElementById('archiveDetailsTitle').textContent = `${a.year} - ${a.semester}`; document.getElementById('archiveSearchInput').value = ''; renderArchiveDetails(); closeArchiveModal(); document.getElementById('archiveDetailsModal').classList.add('active') }
+        function renderArchiveDetails() { if (currentViewingArchiveIndex === null) return; const a = archives[currentViewingArchiveIndex]; const st = document.getElementById('archiveSearchInput').value.toLowerCase(); const c = document.getElementById('archiveDetailsContent'); c.innerHTML = `<div class="archive-rooms">${a.rooms.map(r => { const fs = r.students.filter(s => s.name.toLowerCase().includes(st) || s.course.toLowerCase().includes(st) || s.year.toLowerCase().includes(st)); if (st && fs.length === 0) return ''; return `<div class="archive-room"><div class="archive-room-title">${r.name} (${fs.length} students${st ? ' matched' : ''})</div>${fs.length === 0 ? '<p style="color:#a0aec0;font-size:0.9em;">No students</p>' : fs.map(s => `<div class="archive-student"><strong>${s.number ? s.number + '. ' : ''}${s.name}</strong> - ${s.course} (Year ${s.year})</div>`).join('')}</div>` }).join('')}</div>` }
+        function filterArchiveDetails() { renderArchiveDetails() }
+        function printArchiveDetails() { if (currentViewingArchiveIndex === null) return; const a = archives[currentViewingArchiveIndex]; const st = document.getElementById('archiveSearchInput').value.toLowerCase(); let pc = `<div id="printArea" style="padding:20px;font-family:Arial,sans-serif;"><h1 style="text-align:center;margin-bottom:10px;">${a.year} - ${a.semester}</h1><p style="text-align:center;color:#666;margin-bottom:30px;">Archived: ${a.archivedDate}</p>`; a.rooms.forEach(r => { const fs = r.students.filter(s => s.name.toLowerCase().includes(st) || s.course.toLowerCase().includes(st) || s.year.toLowerCase().includes(st)); if (st && fs.length === 0) return; pc += `<div style="page-break-inside:avoid;margin-bottom:30px;"><h2 style="background:#667eea;color:white;padding:10px;border-radius:5px;">${r.name} - ${fs.length} Student${fs.length !== 1 ? 's' : ''}</h2><table style="width:100%;border-collapse:collapse;margin-top:10px;"><thead><tr style="background:#f0f0f0;"><th style="border:1px solid #ddd;padding:8px;text-align:left;">No.</th><th style="border:1px solid #ddd;padding:8px;text-align:left;">Name</th><th style="border:1px solid #ddd;padding:8px;text-align:left;">Course</th><th style="border:1px solid #ddd;padding:8px;text-align:left;">Year</th></tr></thead><tbody>`; fs.forEach(s => { pc += `<tr><td style="border:1px solid #ddd;padding:8px;">${s.number || ''}</td><td style="border:1px solid #ddd;padding:8px;">${s.name}</td><td style="border:1px solid #ddd;padding:8px;">${s.course}</td><td style="border:1px solid #ddd;padding:8px;">${s.year}</td></tr>` }); pc += `</tbody></table></div>` }); pc += `</div>`; const epa = document.getElementById('printArea'); if (epa) epa.remove(); document.body.insertAdjacentHTML('beforeend', pc); window.print(); setTimeout(() => { const pa = document.getElementById('printArea'); if (pa) pa.remove() }, 100) }
+        function closeArchiveDetailsModal() { currentViewingArchiveIndex = null; document.getElementById('archiveDetailsModal').classList.remove('active'); document.getElementById('archiveSearchInput').value = ''; showArchiveModal() }
+        document.getElementById('emptyState').style.display = 'block';
+    </script>
+</body>
+
+</html>
